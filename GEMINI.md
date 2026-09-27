@@ -13,6 +13,7 @@ When given a new task, you must follow this workflow strictly:
 3. **Propose the Plan:**
    - Propose the ordered list of subtasks to the user.
    - Explicitly ask for the user's verification and approval of the plan.
+   - **CRITICAL:** If the user requests any changes to the proposed subtasks or plan during this stage, you MUST present the revised plan in its entirety and ask for explicit approval again. Do NOT jump into implementation until the revised plan is confirmed.
 
 4. **Implementation and Approval:**
    - **Do not start implementation** until the user has explicitly verified and approved the subtasks.

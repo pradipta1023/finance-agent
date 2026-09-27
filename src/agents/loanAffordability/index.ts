@@ -1,1 +1,1 @@
-export { app } from "./graph";
+export { app } from "./graph/graph.js";

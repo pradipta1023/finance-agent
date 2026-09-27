@@ -1,4 +1,4 @@
-import { AgentState } from "./state";
+import { type AgentState } from "../state/state.js";
 import { ToolMessage } from "@langchain/core/messages";
 
 // --- Helper Functions ---
@@ -8,7 +8,7 @@ const extractStateUpdates = (args: any): Partial<AgentState> => {
   const updatableKeys: (keyof AgentState)[] = [
     "income", "expenses", "loanAmount", "interestRate", "tenureMonths", "defaultsConfirmed"
   ];
-  
+
   for (const key of updatableKeys) {
     if (args[key] !== undefined) {
       // @ts-ignore - Dynamic key assignment
@@ -38,7 +38,7 @@ export type ToolHandler = (args: any, state: AgentState, stateUpdates: Partial<A
 
 const handleSaveFinancialData: ToolHandler = (args, _state, _stateUpdates, toolCallId) => {
   const updates = extractStateUpdates(args);
-  
+
   const toolMessage = new ToolMessage({
     content: "Data saved.",
     name: "saveFinancialData",
@@ -49,26 +49,26 @@ const handleSaveFinancialData: ToolHandler = (args, _state, _stateUpdates, toolC
 };
 
 const handleEvaluateLoan: ToolHandler = (_args, state, stateUpdates, toolCallId) => {
-  const { 
-    income, 
-    expenses, 
-    loanAmount, 
-    interestRate, 
-    tenureMonths, 
-    defaultsConfirmed 
+  const {
+    income,
+    expenses,
+    loanAmount,
+    interestRate,
+    tenureMonths,
+    defaultsConfirmed
   } = { ...state, ...stateUpdates };
 
   if (income === null || expenses === null || loanAmount === null) {
-     throw new Error("Cannot evaluate loan: missing core financial data (income, expenses, or loanAmount).");
+    throw new Error("Cannot evaluate loan: missing core financial data (income, expenses, or loanAmount).");
   }
-  
+
   if (!defaultsConfirmed) {
-     throw new Error("Cannot evaluate loan: user has not confirmed the defaults (interest rate and tenure). Please ask the user to confirm or change the defaults.");
+    throw new Error("Cannot evaluate loan: user has not confirmed the defaults (interest rate and tenure). Please ask the user to confirm or change the defaults.");
   }
 
   const emi = calculateEMI(loanAmount, interestRate, tenureMonths);
   const { isApproved, outflowPercentage } = evaluateLoanApproval(income, expenses, emi);
-  
+
   const verdict = isApproved ? "APPROVED" : "REJECTED";
   const resultMessage = `Evaluation Result: ${verdict}\nEMI: ${emi.toFixed(2)}\nTotal Outflow Percentage: ${outflowPercentage.toFixed(2)}%`;
 

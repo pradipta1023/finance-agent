@@ -46,10 +46,17 @@ router.post("/chat", async (req: Request, res: Response): Promise<void> => {
 
     for await (const event of stream) {
       if (event.event === "on_chain_start") {
-        const name = event.name;
-        if (name === "generalChat" || name === "loanAgent") {
-          const uiLabel = name === "loanAgent" ? "Loan Agent" : "General Assistant";
-          res.write(`event: persona_switch\ndata: ${JSON.stringify({ agentId: name, uiLabel })}\n\n`);
+        const nodeName = event.metadata?.langgraph_node || event.name;
+        
+        // Define agents here so we can easily add more in the future without nested ternaries
+        const AGENT_METADATA: Record<string, { id: string; label: string }> = {
+          "GENERAL": { id: "generalChat", label: "General Assistant" },
+          "LOAN": { id: "loanAgent", label: "Loan Agent" },
+        };
+
+        const agentMeta = AGENT_METADATA[nodeName];
+        if (agentMeta) {
+          res.write(`event: persona_switch\ndata: ${JSON.stringify({ agentId: agentMeta.id, uiLabel: agentMeta.label })}\n\n`);
         }
       } else if (event.event === "on_tool_start") {
         const name = event.name;

@@ -59,7 +59,7 @@ CRITICAL RULES:
 5. If income, expenses, or loanAmount is NULL, ask the user for the remaining missing fields.
 6. If core fields are present but defaultsConfirmed is false: If the user provided one term (e.g., rate) but not the other (e.g., tenure), explicitly ask them for the missing term. If they provided neither, say exactly: "We are using a standard interest rate of 10% over 60 months. Proceed or change?"
 7. If defaultsConfirmed is true AND all core data is present, you MUST call evaluateLoan. Do not calculate manually.
-8. Present the final verdict exactly as the tool output states. Do NOT ask for further confirmation after evaluation.`;
+8. After you call evaluateLoan and present the basic affordability verdict to the user, you MUST ask if they would like to proceed with a formal pre-approval. Tell them this requires a soft credit check and explicitly ask for their consent. If they consent, call initiateCreditCheck.`;
 
   const response = await llm.invoke([
     new SystemMessage(systemPrompt),

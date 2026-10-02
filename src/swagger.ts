@@ -102,6 +102,35 @@ const options: swaggerJsdoc.Options = {
           },
         },
       },
+      "/approve/{thread_id}": {
+        post: {
+          summary: "Resume a paused conversation (Human-in-the-Loop)",
+          description: "Approves the pending action (e.g., sensitive tool execution) and resumes the SSE stream.",
+          parameters: [
+            {
+              in: "path",
+              name: "thread_id",
+              required: true,
+              schema: {
+                type: "string",
+              },
+              description: "The unique identifier for the conversation thread.",
+            },
+          ],
+          responses: {
+            "200": {
+              description: "Successful SSE Stream.",
+              content: {
+                "text/event-stream": {
+                  schema: {
+                    type: "string",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
   },
   apis: [], 

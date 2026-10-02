@@ -32,4 +32,30 @@ export const evaluateLoanTool = tool(
   }
 );
 
-export const tools = [saveFinancialDataTool, evaluateLoanTool];
+export const fetchLiveInterestRatesTool = tool(
+  async () => {
+    return "Rates fetched.";
+  },
+  {
+    name: "fetchLiveInterestRates",
+    description: "Fetches current live interest rates based on the loan type.",
+    schema: z.object({
+      loanType: z.enum(["auto", "home", "personal"]).describe("The type of loan to fetch rates for."),
+    }),
+  }
+);
+
+export const initiateCreditCheckTool = tool(
+  async () => {
+    return "Credit check initiated.";
+  },
+  {
+    name: "initiateCreditCheck",
+    description: "Initiates a soft credit check. This requires explicit user consent.",
+    schema: z.object({
+      userConsentConfirmed: z.boolean().describe("Whether the user has explicitly consented to the credit check."),
+    }),
+  }
+);
+
+export const tools = [saveFinancialDataTool, evaluateLoanTool, fetchLiveInterestRatesTool, initiateCreditCheckTool];

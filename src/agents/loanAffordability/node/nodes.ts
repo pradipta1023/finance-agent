@@ -52,13 +52,14 @@ CURRENT STATE:
 - Defaults Confirmed: ${defaultsConfirmed}
 
 CRITICAL RULES:
-1. If the user provides any new financial data (income, expenses, loan amount, interest rate, or tenure), you MUST call saveFinancialData to save it.
-2. If the user agrees to the standard terms, OR if they specify their own custom interest rate or tenure, you MUST call saveFinancialData with defaultsConfirmed set to true (along with their custom values if provided).
-3. If income, expenses, or loanAmount is NULL, ask the user for the remaining missing fields.
-4. If core fields (income, expenses, loanAmount) are present and defaultsConfirmed is false, tell the user exactly this: "We are using a standard interest rate of 10% over 60 months. Proceed or change?"
-5. If defaultsConfirmed is true AND all core data is present, you MUST call evaluateLoan. Do not calculate manually.
-6. Present final verdict exactly as the tool output states.
-7. When you receive the Evaluation Result, immediately output it to the user. Do NOT ask for further confirmation.`;
+1. If the user asks about loan types or rates, use fetchLiveInterestRates to get the current rate.
+2. You MUST ask the user for explicit consent before calling initiateCreditCheck. Once they consent, run the initiateCreditCheck tool.
+3. If the user provides any new financial data (income, expenses, loan amount, interest rate, or tenure), you MUST call saveFinancialData to save it.
+4. If the user agrees to the standard terms, OR if they specify their own custom interest rate or tenure, you MUST call saveFinancialData with defaultsConfirmed set to true.
+5. If income, expenses, or loanAmount is NULL, ask the user for the remaining missing fields.
+6. If core fields (income, expenses, loanAmount) are present and defaultsConfirmed is false, tell the user exactly this: "We are using a standard interest rate of 10% over 60 months. Proceed or change?"
+7. If defaultsConfirmed is true AND all core data is present, you MUST call evaluateLoan. Do not calculate manually.
+8. Present the final verdict exactly as the tool output states. Do NOT ask for further confirmation after evaluation.`;
 
   const response = await llm.invoke([
     new SystemMessage(systemPrompt),
@@ -68,7 +69,7 @@ CRITICAL RULES:
   return { messages: [response] };
 };
 
-export const executeToolNode = async (state: AgentState) => {
+const executeTools = async (state: AgentState, allowedTools: string[]) => {
   const lastMessage = state.messages[state.messages.length - 1];
   
   if (lastMessage?._getType() !== "ai") return {};
@@ -80,6 +81,8 @@ export const executeToolNode = async (state: AgentState) => {
   let stateUpdates: Partial<AgentState> = {};
 
   for (const toolCall of aiMessage.tool_calls) {
+    if (!allowedTools.includes(toolCall.name)) continue;
+
     try {
       const handler = toolHandlers[toolCall.name];
       if (!handler) {
@@ -108,3 +111,6 @@ export const executeToolNode = async (state: AgentState) => {
     ...stateUpdates,
   };
 };
+
+export const safeToolsNode = (state: AgentState) => executeTools(state, ["saveFinancialData", "evaluateLoan", "fetchLiveInterestRates"]);
+export const sensitiveToolsNode = (state: AgentState) => executeTools(state, ["initiateCreditCheck"]);

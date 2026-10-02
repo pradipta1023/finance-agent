@@ -81,8 +81,45 @@ const handleEvaluateLoan: ToolHandler = (_args, state, stateUpdates, toolCallId)
   };
 };
 
+const handleFetchLiveInterestRates: ToolHandler = (args, _state, _stateUpdates, toolCallId) => {
+  const { loanType } = args;
+  let rate = 10;
+  if (loanType === "auto") rate = 8.5;
+  else if (loanType === "home") rate = 6.5;
+  else if (loanType === "personal") rate = 12.0;
+
+  return {
+    toolMessage: new ToolMessage({
+      content: `Live interest rate for ${loanType} loan is ${rate}%.`,
+      name: "fetchLiveInterestRates",
+      tool_call_id: toolCallId,
+    })
+  };
+};
+
+const handleInitiateCreditCheck: ToolHandler = (args, _state, _stateUpdates, toolCallId) => {
+  const { userConsentConfirmed } = args;
+
+  let content = "";
+  if (!userConsentConfirmed) {
+    content = "Credit check aborted: No consent.";
+  } else {
+    content = "Credit check successful. Score: 740 (Excellent).";
+  }
+
+  return {
+    toolMessage: new ToolMessage({
+      content,
+      name: "initiateCreditCheck",
+      tool_call_id: toolCallId,
+    })
+  };
+};
+
 // Dispatch Object Mapping Tool Names to their Handlers
 export const toolHandlers: Record<string, ToolHandler> = {
   saveFinancialData: handleSaveFinancialData,
   evaluateLoan: handleEvaluateLoan,
+  fetchLiveInterestRates: handleFetchLiveInterestRates,
+  initiateCreditCheck: handleInitiateCreditCheck,
 };
